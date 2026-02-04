@@ -1,7 +1,7 @@
 <script>
 import { onMount } from "svelte";
 
-export const points = [];
+export let points = [];
 
 let range = "all";
 const vw = 1000;
