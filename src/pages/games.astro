@@ -1,14 +1,15 @@
 ---
-import DataTable from "../components/DataTable.svelte";
 import games from "../../data/games.json";
+import DataTable from "../components/DataTable.svelte";
+
 const rows = Array.isArray(games) ? games : [];
 const columns = [
-  { key: "game", label: "Game", link: { prefix: "/games/", key: "game" } },
-  { key: "avg", label: "Avg" },
-  { key: "median", label: "Median" },
-  { key: "ratings_count", label: "Ratings" },
-  { key: "plays", label: "Plays" },
-  { key: "last_played", label: "Last Played" }
+	{ key: "game", label: "Game", link: { prefix: "/games/", key: "game" } },
+	{ key: "avg", label: "Avg" },
+	{ key: "median", label: "Median" },
+	{ key: "ratings_count", label: "Ratings" },
+	{ key: "plays", label: "Plays" },
+	{ key: "last_played", label: "Last Played" },
 ];
 const rowLink = { prefix: "/games/", key: "game" };
 ---

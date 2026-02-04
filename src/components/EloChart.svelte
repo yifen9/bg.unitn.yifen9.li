@@ -1,94 +1,137 @@
 <script>
-  import { onMount } from "svelte";
+import { onMount } from "svelte";
 
-  export let points = [];
+export const points = [];
 
-  let range = "all";
-  const vw = 1000;
-  const vh = 360;
-  let pad = 40;
+let range = "all";
+const vw = 1000;
+const vh = 360;
+const pad = 40;
 
-  let svgEl;
+let svgEl;
 
-  const toTime = (d) => d instanceof Date ? d.getTime() : (typeof d === "number" ? d : new Date(d).getTime());
-  const toDate = (d) => d instanceof Date ? d : new Date(d);
+const toTime = (d) =>
+	d instanceof Date
+		? d.getTime()
+		: typeof d === "number"
+			? d
+			: new Date(d).getTime();
+const toDate = (d) => (d instanceof Date ? d : new Date(d));
 
-  function daysAgo(n) {
-    const dt = new Date();
-    dt.setDate(dt.getDate() - n);
-    return dt;
-  }
-  function inRange(p) {
-    if (range === "all") return true;
-    return toDate(p.date) >= daysAgo(Number(range));
-  }
+function daysAgo(n) {
+	const dt = new Date();
+	dt.setDate(dt.getDate() - n);
+	return dt;
+}
+function inRange(p) {
+	if (range === "all") return true;
+	return toDate(p.date) >= daysAgo(Number(range));
+}
 
-  $: filtered = points.filter(inRange).sort((a, b) => toTime(a.date) - toTime(b.date));
-  $: xs = filtered.map((p) => toTime(p.date));
-  $: ys = filtered.map((p) => +p.rating);
+$: filtered = points
+	.filter(inRange)
+	.sort((a, b) => toTime(a.date) - toTime(b.date));
+$: xs = filtered.map((p) => toTime(p.date));
+$: ys = filtered.map((p) => +p.rating);
 
-  $: xMin0 = xs.length ? Math.min(...xs) : Date.now() - 86400000;
-  $: xMax0 = xs.length ? Math.max(...xs) : Date.now();
-  $: yMin0 = ys.length ? Math.min(...ys) : 1400;
-  $: yMax0 = ys.length ? Math.max(...ys) : 1600;
+$: xMin0 = xs.length ? Math.min(...xs) : Date.now() - 86400000;
+$: xMax0 = xs.length ? Math.max(...xs) : Date.now();
+$: yMin0 = ys.length ? Math.min(...ys) : 1400;
+$: yMax0 = ys.length ? Math.max(...ys) : 1600;
 
-  const ONE_HOUR = 60 * 60 * 1000;
-  $: xSpan = Math.max(1, xMax0 - xMin0);
-  $: ySpan = Math.max(1, yMax0 - yMin0);
-  $: xPad = Math.max(xSpan * 0.05, ONE_HOUR);
-  $: yPad = Math.max(ySpan * 0.05, 6);
+const ONE_HOUR = 60 * 60 * 1000;
+$: xSpan = Math.max(1, xMax0 - xMin0);
+$: ySpan = Math.max(1, yMax0 - yMin0);
+$: xPad = Math.max(xSpan * 0.05, ONE_HOUR);
+$: yPad = Math.max(ySpan * 0.05, 6);
 
-  $: xMin = xMin0 - xPad;
-  $: xMax = xMax0 + xPad;
-  $: yMin = yMin0 - yPad;
-  $: yMax = yMax0 + yPad;
+$: xMin = xMin0 - xPad;
+$: xMax = xMax0 + xPad;
+$: yMin = yMin0 - yPad;
+$: yMax = yMax0 + yPad;
 
-  function X(t){ const w=vw-2*pad; const d=xMax-xMin||1; return pad + (w*(t-xMin))/d; }
-  function Y(v){ const h=vh-2*pad; const d=yMax-yMin||1; return vh - pad - (h*(v-yMin))/d; }
+function X(t) {
+	const w = vw - 2 * pad;
+	const d = xMax - xMin || 1;
+	return pad + (w * (t - xMin)) / d;
+}
+function Y(v) {
+	const h = vh - 2 * pad;
+	const d = yMax - yMin || 1;
+	return vh - pad - (h * (v - yMin)) / d;
+}
 
-  $: pathD = filtered.map((p,i)=>`${i===0?"M":"L"}${X(toTime(p.date))},${Y(+p.rating)}`).join(" ");
+$: pathD = filtered
+	.map((p, i) => `${i === 0 ? "M" : "L"}${X(toTime(p.date))},${Y(+p.rating)}`)
+	.join(" ");
 
-  function fmtDate(d){
-    const dt = toDate(d);
-    if (Number.isNaN(+dt)) return "";
-    const y=dt.getFullYear(), m=String(dt.getMonth()+1).padStart(2,"0"), dd=String(dt.getDate()).padStart(2,"0");
-    return `${y}-${m}-${dd}`;
-  }
+function fmtDate(d) {
+	const dt = toDate(d);
+	if (Number.isNaN(+dt)) return "";
+	const y = dt.getFullYear(),
+		m = String(dt.getMonth() + 1).padStart(2, "0"),
+		dd = String(dt.getDate()).padStart(2, "0");
+	return `${y}-${m}-${dd}`;
+}
 
-  function svgPoint(evt){
-    const pt = svgEl.createSVGPoint();
-    pt.x = evt.clientX;
-    pt.y = evt.clientY;
-    const m = svgEl.getScreenCTM().inverse();
-    const p = pt.matrixTransform(m);
-    return { x: p.x, y: p.y };
-  }
+function svgPoint(evt) {
+	const pt = svgEl.createSVGPoint();
+	pt.x = evt.clientX;
+	pt.y = evt.clientY;
+	const m = svgEl.getScreenCTM().inverse();
+	const p = pt.matrixTransform(m);
+	return { x: p.x, y: p.y };
+}
 
-  function nearest(mx, my){
-    if(!filtered.length) return null;
-    let best=null, dist=Infinity;
-    for(const p of filtered){
-      const dx = X(toTime(p.date)) - mx;
-      const dy = Y(+p.rating) - my;
-      const d2 = dx*dx + dy*dy;
-      if(d2 < dist){ best=p; dist=d2; }
-    }
-    return best;
-  }
+function nearest(mx, my) {
+	if (!filtered.length) return null;
+	let best = null,
+		dist = Infinity;
+	for (const p of filtered) {
+		const dx = X(toTime(p.date)) - mx;
+		const dy = Y(+p.rating) - my;
+		const d2 = dx * dx + dy * dy;
+		if (d2 < dist) {
+			best = p;
+			dist = d2;
+		}
+	}
+	return best;
+}
 
-  let hover = null;
-  function onMove(e){
-    const p = svgPoint(e);
-    hover = nearest(p.x, p.y);
-  }
-  function onLeave(){ hover = null; }
-  function onClickPoint(p){ if (p?.session_id) location.href = `/sessions/${p.session_id}`; }
+let hover = null;
+function onMove(e) {
+	const p = svgPoint(e);
+	hover = nearest(p.x, p.y);
+}
+function onLeave() {
+	hover = null;
+}
+function onClickPoint(p) {
+	if (p?.session_id) location.href = `/sessions/${p.session_id}`;
+}
 
-  function yt(){ const k=5, s=yMax-yMin||1, step=s/k, a=[]; for(let i=0;i<=k;i++) a.push(yMin+i*step); return a; }
-  function xt(){ const k=6, s=xMax-xMin||1, step=s/k, a=[]; for(let i=0;i<=k;i++) a.push(xMin+i*step); return a; }
-  function onRange(e){ range = e.currentTarget.value; }
+function yt() {
+	const k = 5,
+		s = yMax - yMin || 1,
+		step = s / k,
+		a = [];
+	for (let i = 0; i <= k; i++) a.push(yMin + i * step);
+	return a;
+}
+function xt() {
+	const k = 6,
+		s = xMax - xMin || 1,
+		step = s / k,
+		a = [];
+	for (let i = 0; i <= k; i++) a.push(xMin + i * step);
+	return a;
+}
+function onRange(e) {
+	range = e.currentTarget.value;
+}
 
-  onMount(()=>{});
+onMount(() => {});
 </script>
 
 <div style="width:100%">

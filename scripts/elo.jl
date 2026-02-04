@@ -34,13 +34,13 @@ function load_minutes_map()
     fp = joinpath(data_dir, "game_minutes.json")
     if isfile(fp)
         arr = JSON3.read(read(fp, String))
-        d = Dict{String,Int}()
+        d = Dict{String,Float64}()
         for x in arr
-            d[String(x["game"])] = Int(x["minutes"])
+            d[String(x["game"])] = Float64(x["minutes"])
         end
         return d
     else
-        return Dict{String,Int}()
+        return Dict{String,Float64}()
     end
 end
 
@@ -49,7 +49,7 @@ minutes_map = load_minutes_map()
 function pick_minutes(s, minutes_map)
     m = haskey(s, "minutes") ? s["minutes"] : nothing
     if m !== nothing
-        return Int(m)
+        return Float64(m)
     end
     g = haskey(s, "game") ? String(s["game"]) : ""
     return get(minutes_map, g, nothing)

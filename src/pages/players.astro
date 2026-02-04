@@ -1,11 +1,16 @@
 ---
-import DataTable from "../components/DataTable.svelte";
 import ratings from "../../data/elo/ratings.json";
+import DataTable from "../components/DataTable.svelte";
+
 const rows = Array.isArray(ratings) ? ratings : [];
 const columns = [
-  { key: "player", label: "Player", link: { prefix: "/players/", key: "player" } },
-  { key: "rating", label: "Rating" },
-  { key: "games_played", label: "Games Played" }
+	{
+		key: "player",
+		label: "Player",
+		link: { prefix: "/players/", key: "player" },
+	},
+	{ key: "rating", label: "Rating" },
+	{ key: "games_played", label: "Games Played" },
 ];
 const rowLink = { prefix: "/players/", key: "player" };
 ---

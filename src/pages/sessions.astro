@@ -1,12 +1,17 @@
 ---
-import DataTable from "../components/DataTable.svelte";
 import sessions from "../../data/sessions.json";
+import DataTable from "../components/DataTable.svelte";
+
 const rows = Array.isArray(sessions) ? sessions : [];
 const columns = [
-  { key: "date", label: "Date" },
-  { key: "game", label: "Game", link: { prefix: "/games/", key: "game" } },
-  { key: "session_id", label: "Session", link: { prefix: "/sessions/", key: "session_id", encode: false } },
-  { key: "participants", label: "Participants", join: ", " }
+	{ key: "date", label: "Date" },
+	{ key: "game", label: "Game", link: { prefix: "/games/", key: "game" } },
+	{
+		key: "session_id",
+		label: "Session",
+		link: { prefix: "/sessions/", key: "session_id", encode: false },
+	},
+	{ key: "participants", label: "Participants", join: ", " },
 ];
 const rowLink = { prefix: "/sessions/", key: "session_id", encode: false };
 ---

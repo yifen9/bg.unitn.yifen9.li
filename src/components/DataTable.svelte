@@ -1,8 +1,8 @@
 <script>
-export let columns = [];
-export let rows = [];
-export let initialSort = null;
-export let rowLink = null;
+export const columns = [];
+export const rows = [];
+export const initialSort = null;
+export const rowLink = null;
 
 let q = "";
 let sortKey = initialSort?.key ?? null;
